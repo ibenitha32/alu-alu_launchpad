@@ -2,11 +2,10 @@
 
 Internship & opportunity matching platform connecting ALU students with verified student-led startups. Built with Flutter, Firebase (Auth + Firestore), and Riverpod.
 
-Full architecture rationale (schema design, state-management justification, security-rules reasoning) lives in `architecture_design.md` at the repo root — pull from it directly for the technical report's system architecture section.
 
 ## Getting started
 
-1. **Create the Flutter project shell** (if not already done):
+1. **Create the Flutter project shell**:
    ```
    flutter create --org com.alu alu_launchpad
    ```
@@ -92,6 +91,6 @@ Extend this pattern to `OpportunityController` and `StartupController` using the
 - Skill matching is exact-string overlap, not semantic — a v2 could stem/normalize skill names or use a small taxonomy.
 - No automated CI — `flutter test` is run manually; adding GitHub Actions would strengthen the "maintainability" story.
 
-## Submission reminder
+## Submission
 
-Per the assignment brief: final Canvas submission needs the GitHub repo link, a 7–10 minute demo video, and the PDF technical report, named `StudentName_FinalFlutterProject`.
+Final Canvas submission: the GitHub repo link, a 7–10 minute demo video, and the technical report, named `BenithaIradukunda_FinalFlutterProject`.
