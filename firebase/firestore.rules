@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isPlatformAdmin() {
+      return isSignedIn() && userRole() == 'platform_admin';
+    }
+
+    function isStartupAdminOf(startupId) {
+      return isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/startups/$(startupId)).data.adminUids;
+    }
+
+    // ---- users/{uid} ----
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(uid);
+      // Users can edit their own profile but never their own `role` field
+      // (role escalation must go through a trusted flow, not client writes).
+      allow update: if isOwner(uid) &&
+        request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    // ---- startups/{startupId} ----
+    match /startups/{startupId} {
+      allow read: if true; // public discovery; UI filters to verified only
+      allow create: if isSignedIn();
+      allow update: if isStartupAdminOf(startupId) || isPlatformAdmin();
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ---- opportunities/{opportunityId} ----
+    match /opportunities/{opportunityId} {
+      allow read: if resource.data.status == 'open' ||
+        (isSignedIn() && isStartupAdminOf(resource.data.startupId));
+
+      // Only verified startups may post — enforced server-side, not just in the UI.
+      allow create: if isSignedIn() &&
+        isStartupAdminOf(request.resource.data.startupId) &&
+        get(/databases/$(database)/documents/startups/$(request.resource.data.startupId)).data.verificationStatus == 'verified';
+
+      allow update: if isStartupAdminOf(resource.data.startupId) || isPlatformAdmin();
+      allow delete: if isStartupAdminOf(resource.data.startupId) || isPlatformAdmin();
+    }
+
+    // ---- applications/{applicationId} ----
+    match /applications/{applicationId} {
+      allow read: if isSignedIn() &&
+        (resource.data.studentUid == request.auth.uid ||
+         isStartupAdminOf(resource.data.startupId) ||
+         isPlatformAdmin());
+
+      allow create: if isSignedIn() &&
+        request.resource.data.studentUid == request.auth.uid;
+
+      // Students can't edit their own application after submitting (would let
+      // them fake status). Only the startup admin can move the status forward.
+      allow update: if isStartupAdminOf(resource.data.startupId) || isPlatformAdmin();
+      allow delete: if false;
+    }
+
+    // ---- bookmarks/{uid}/items/{opportunityId} ----
+    match /bookmarks/{uid}/items/{itemId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // ---- notifications/{uid}/items/{notificationId} ----
+    match /notifications/{uid}/items/{itemId} {
+      allow read, update: if isOwner(uid);
+      allow create: if isSignedIn(); // written by other users' actions (e.g. status change)
+      allow delete: if isOwner(uid);
+    }
+  }
+}
