@@ -4,9 +4,9 @@ import '../data/models/opportunity.dart';
 import 'auth_providers.dart';
 import 'repository_providers.dart';
 
-/// Selected category filter for the discovery screen ("Design", "Engineering", etc).
-/// Null = no filter ("all categories").
-final categoryFilterProvider = StateProvider<String?>((ref) => null);
+/// Selected category filter for the discovery screen. Null = no filter
+/// ("all categories").
+final categoryFilterProvider = StateProvider<OpportunityCategory?>((ref) => null);
 
 /// Free-text search query typed into the search bar.
 final searchQueryProvider = StateProvider<String>((ref) => '');
@@ -17,7 +17,7 @@ final openOpportunitiesProvider =
   final category = ref.watch(categoryFilterProvider);
   return ref
       .watch(opportunityRepositoryProvider)
-      .watchOpenOpportunities(category: category);
+      .watchOpenOpportunities(category: category?.storageValue);
 });
 
 /// Opportunities filtered client-side by the search box on top of the

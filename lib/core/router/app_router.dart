@@ -9,6 +9,7 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/presentation/role_select_screen.dart';
 import '../../features/opportunity_detail/presentation/opportunity_detail_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/profile/presentation/saved_opportunities_screen.dart';
 import '../../features/startup_dashboard/presentation/applicant_list_screen.dart';
 import '../../features/startup_dashboard/presentation/dashboard_screen.dart';
 import '../../features/startup_dashboard/presentation/post_opportunity_screen.dart';
@@ -73,6 +74,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => ApplicantListScreen(
           opportunityId: s.pathParameters['opportunityId']!,
         ),
+      ),
+      GoRoute(
+        path: '/profile/skills',
+        builder: (c, s) => const RoleSelectScreen(isEditing: true),
+      ),
+      GoRoute(
+        path: '/profile/saved',
+        builder: (c, s) => const SavedOpportunitiesScreen(),
       ),
       GoRoute(
         path: '/register-startup',

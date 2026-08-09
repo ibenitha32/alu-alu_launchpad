@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/job_application.dart';
 import 'auth_providers.dart';
+import 'opportunity_providers.dart';
 import 'repository_providers.dart';
 
 /// Real-time list of the signed-in student's own applications — powers the
@@ -56,18 +57,55 @@ class ApplicationController extends AsyncNotifier<void> {
             studentUid: user.uid,
             startupId: startupId,
             coverNote: coverNote,
+            studentName: user.name,
+            studentSkills: user.skills,
+            studentPortfolioLink:
+                user.portfolioLinks.isNotEmpty ? user.portfolioLinks.first : null,
           ),
     );
   }
 
+  /// Takes the full [application] (rather than just its id) because the
+  /// student-facing notification needs to know who to notify and what
+  /// opportunity changed — data the caller already has on hand.
   Future<void> updateStatus(
-      String applicationId, ApplicationStatus status) async {
+      JobApplication application, ApplicationStatus status) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
+    state = await AsyncValue.guard(() async {
+      await ref
           .read(applicationRepositoryProvider)
-          .updateStatus(applicationId, status),
-    );
+          .updateStatus(application.id, status);
+
+      final opportunity = await ref
+          .read(opportunityRepositoryProvider)
+          .watchOpportunity(application.opportunityId)
+          .first;
+
+      await ref.read(notificationRepositoryProvider).notify(
+            uid: application.studentUid,
+            type: 'status_change',
+            message:
+                'Your application for "${opportunity?.title ?? 'an opportunity'}" '
+                'is now ${_statusLabel(status)}.',
+          );
+    });
+  }
+}
+
+String _statusLabel(ApplicationStatus status) {
+  switch (status) {
+    case ApplicationStatus.applied:
+      return 'Applied';
+    case ApplicationStatus.underReview:
+      return 'Under Review';
+    case ApplicationStatus.shortlisted:
+      return 'Shortlisted';
+    case ApplicationStatus.interview:
+      return 'Interview';
+    case ApplicationStatus.accepted:
+      return 'Accepted';
+    case ApplicationStatus.rejected:
+      return 'Rejected';
   }
 }
 

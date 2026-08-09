@@ -9,35 +9,57 @@ import '../../../providers/auth_providers.dart';
 import '../../../providers/repository_providers.dart';
 
 /// Shown once after a student signs up so recommendations/skill-matching
-/// have something to work with immediately.
+/// have something to work with immediately. Also reused (with
+/// [isEditing]: true) behind Profile → "Skills & Interests" so skills stay
+/// editable after onboarding.
 class RoleSelectScreen extends ConsumerStatefulWidget {
-  const RoleSelectScreen({super.key});
+  const RoleSelectScreen({super.key, this.isEditing = false});
+
+  final bool isEditing;
 
   @override
   ConsumerState<RoleSelectScreen> createState() => _RoleSelectScreenState();
 }
 
 class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
-  static const _suggested = [
+  static const _baseSuggestions = [
     'Flutter', 'Dart', 'UX Design', 'Research', 'Marketing',
     'Content Writing', 'Data Analysis', 'Business Analysis',
   ];
 
-  final Set<String> _selected = {};
+  late Set<String> _selected;
+  late List<String> _options;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentSkills = ref.read(currentAppUserProvider).value?.skills ?? const [];
+    _selected = {...currentSkills};
+    _options = {..._baseSuggestions, ...currentSkills}.toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: widget.isEditing
+          ? AppBar(
+              backgroundColor: AppColors.background,
+              elevation: 0,
+              title: const Text('Skills & Interests'),
+            )
+          : null,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('What are you good at?', style: AppTextStyles.heading),
-              const SizedBox(height: 4),
+              if (!widget.isEditing) ...[
+                Text('What are you good at?', style: AppTextStyles.heading),
+                const SizedBox(height: 4),
+              ],
               Text('Pick a few skills — this powers your recommendations',
                   style: AppTextStyles.body
                       .copyWith(color: AppColors.textSecondary)),
@@ -45,7 +67,7 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: _suggested.map((skill) {
+                children: _options.map((skill) {
                   final isSelected = _selected.contains(skill);
                   return FilterChip(
                     label: Text(skill),
@@ -59,7 +81,7 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
               ),
               const Spacer(),
               PrimaryButton(
-                label: 'Continue',
+                label: widget.isEditing ? 'Save' : 'Continue',
                 isLoading: _saving,
                 onPressed: () async {
                   setState(() => _saving = true);
@@ -68,8 +90,14 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
                     await ref.read(firestoreProvider).collection('users').doc(user.uid).update({
                       'skills': _selected.toList(),
                     });
+                    ref.invalidate(currentAppUserProvider);
                   }
-                  if (context.mounted) context.go('/home');
+                  if (!context.mounted) return;
+                  if (widget.isEditing) {
+                    context.pop();
+                  } else {
+                    context.go('/home');
+                  }
                 },
               ),
             ],

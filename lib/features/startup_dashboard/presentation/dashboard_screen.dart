@@ -44,7 +44,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               Row(
                 children: const [
-                  Icon(Icons.verified, color: AppColors.success, size: 16),
+                  Icon(Icons.verified, color: AppColors.verifiedGold, size: 16),
                   SizedBox(width: 4),
                   Text('Verified startup', style: AppTextStyles.caption),
                 ],

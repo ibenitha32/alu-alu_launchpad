@@ -64,6 +64,11 @@ class StatusEvent {
 /// Represents applications/{applicationId}.
 /// startupId is denormalized so a startup admin can query
 /// "all applications to my org" without fanning out per opportunity.
+/// studentName/studentSkills/studentPortfolioLink are denormalized from the
+/// applicant's AppUser document at submission time — same pattern as
+/// Opportunity denormalizing startupName/startupLogoUrl — so the applicant
+/// review screen has something to evaluate without an extra per-tile read,
+/// and stays intact even if the AppUser document later changes or is gone.
 class JobApplication {
   final String id;
   final String opportunityId;
@@ -74,6 +79,9 @@ class JobApplication {
   final DateTime appliedAt;
   final DateTime statusUpdatedAt;
   final List<StatusEvent> statusHistory;
+  final String studentName;
+  final List<String> studentSkills;
+  final String? studentPortfolioLink;
 
   const JobApplication({
     required this.id,
@@ -85,6 +93,9 @@ class JobApplication {
     required this.appliedAt,
     required this.statusUpdatedAt,
     this.statusHistory = const [],
+    this.studentName = '',
+    this.studentSkills = const [],
+    this.studentPortfolioLink,
   });
 
   factory JobApplication.fromMap(String id, Map<String, dynamic> map) {
@@ -101,6 +112,9 @@ class JobApplication {
       statusHistory: (map['statusHistory'] as List? ?? const [])
           .map((e) => StatusEvent.fromMap(Map<String, dynamic>.from(e)))
           .toList(),
+      studentName: map['studentName'] as String? ?? '',
+      studentSkills: List<String>.from(map['studentSkills'] as List? ?? const []),
+      studentPortfolioLink: map['studentPortfolioLink'] as String?,
     );
   }
 
@@ -114,6 +128,9 @@ class JobApplication {
       'appliedAt': Timestamp.fromDate(appliedAt),
       'statusUpdatedAt': Timestamp.fromDate(statusUpdatedAt),
       'statusHistory': statusHistory.map((e) => e.toMap()).toList(),
+      'studentName': studentName,
+      'studentSkills': studentSkills,
+      'studentPortfolioLink': studentPortfolioLink,
     };
   }
 }

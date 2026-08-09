@@ -32,22 +32,18 @@ class OpportunityCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: featured ? AppColors.recommendedGradient : null,
           color: featured ? null : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: featured
+          borderRadius: BorderRadius.circular(14),
+          // A thin ink-toned rule instead of a soft drop shadow — reads
+          // closer to a bordered ledger entry than a floating app card.
+          border: featured
               ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+              : Border.all(color: AppColors.textPrimary.withOpacity(0.08)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,12 +117,12 @@ class _StartupLogo extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       alignment: Alignment.center,
       child: opportunity.startupLogoUrl != null
           ? ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               child: Image.network(opportunity.startupLogoUrl!,
                   fit: BoxFit.cover),
             )
@@ -152,7 +148,7 @@ class _Chip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: featured ? Colors.white.withOpacity(0.2) : AppColors.chipBackground,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,

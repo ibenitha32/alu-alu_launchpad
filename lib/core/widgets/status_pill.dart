@@ -37,7 +37,9 @@ class StatusPill extends StatelessWidget {
       case ApplicationStatus.shortlisted:
         return (AppColors.warning, 'Shortlisted');
       case ApplicationStatus.interview:
-        return (AppColors.accentOrange, 'Interview');
+        // Clay, not gold — gold is reserved for verification/trust signals
+        // (see the "Verified startup" badge on the startup dashboard).
+        return (AppColors.accentPink, 'Interview');
       case ApplicationStatus.accepted:
         return (AppColors.success, 'Accepted');
       case ApplicationStatus.rejected:

@@ -22,7 +22,7 @@ class _PostOpportunityScreenState
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _skillsController = TextEditingController();
-  String _category = 'dev';
+  OpportunityCategory _category = OpportunityCategory.engineering;
   Commitment _commitment = Commitment.partTime;
   WorkLocation _location = WorkLocation.remote;
 
@@ -70,18 +70,14 @@ class _PostOpportunityScreenState
               ),
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<OpportunityCategory>(
               value: _category,
               decoration: const InputDecoration(labelText: 'Category'),
-              items: const [
-                DropdownMenuItem(value: 'dev', child: Text('Engineering')),
-                DropdownMenuItem(value: 'design', child: Text('Design')),
-                DropdownMenuItem(value: 'marketing', child: Text('Marketing')),
-                DropdownMenuItem(value: 'ops', child: Text('Operations')),
-                DropdownMenuItem(value: 'research', child: Text('Research')),
-                DropdownMenuItem(value: 'content', child: Text('Content')),
-              ],
-              onChanged: (v) => setState(() => _category = v ?? 'dev'),
+              items: OpportunityCategory.values
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c.label)))
+                  .toList(),
+              onChanged: (v) => setState(
+                  () => _category = v ?? OpportunityCategory.engineering),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Commitment>(
@@ -119,7 +115,7 @@ class _PostOpportunityScreenState
                         startupLogoUrl: startup.logoUrl,
                         title: _titleController.text.trim(),
                         description: _descriptionController.text.trim(),
-                        category: _category,
+                        category: _category.storageValue,
                         skillsRequired: _skillsController.text
                             .split(',')
                             .map((s) => s.trim())

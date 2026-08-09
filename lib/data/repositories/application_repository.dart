@@ -13,6 +13,9 @@ abstract class ApplicationRepository {
     required String studentUid,
     required String startupId,
     required String coverNote,
+    required String studentName,
+    List<String> studentSkills = const [],
+    String? studentPortfolioLink,
   });
 
   Future<void> updateStatus(String applicationId, ApplicationStatus status);
@@ -53,6 +56,9 @@ class FirestoreApplicationRepository implements ApplicationRepository {
     required String studentUid,
     required String startupId,
     required String coverNote,
+    required String studentName,
+    List<String> studentSkills = const [],
+    String? studentPortfolioLink,
   }) async {
     final now = DateTime.now();
     final oppRef = _firestore.collection('opportunities').doc(opportunityId);
@@ -76,6 +82,9 @@ class FirestoreApplicationRepository implements ApplicationRepository {
         'statusHistory': [
           {'status': 'applied', 'timestamp': Timestamp.fromDate(now)}
         ],
+        'studentName': studentName,
+        'studentSkills': studentSkills,
+        'studentPortfolioLink': studentPortfolioLink,
       });
 
       tx.update(oppRef, {'applicantCount': currentCount + 1});

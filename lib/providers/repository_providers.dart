@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/repositories/application_repository.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/bookmark_repository.dart';
+import '../data/repositories/notification_repository.dart';
 import '../data/repositories/opportunity_repository.dart';
 import '../data/repositories/startup_repository.dart';
 
@@ -39,4 +41,12 @@ final opportunityRepositoryProvider = Provider<OpportunityRepository>((ref) {
 
 final applicationRepositoryProvider = Provider<ApplicationRepository>((ref) {
   return FirestoreApplicationRepository(ref.watch(firestoreProvider));
+});
+
+final bookmarkRepositoryProvider = Provider<BookmarkRepository>((ref) {
+  return FirestoreBookmarkRepository(ref.watch(firestoreProvider));
+});
+
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  return FirestoreNotificationRepository(ref.watch(firestoreProvider));
 });

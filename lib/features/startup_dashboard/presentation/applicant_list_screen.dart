@@ -62,11 +62,37 @@ class _ApplicantTile extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Applicant ${application.studentUid.substring(0, 6)}',
-                  style: AppTextStyles.cardTitle),
+              Expanded(
+                child: Text(
+                  // Falls back to a UID fragment for applications submitted
+                  // before denormalization was added, or the rare case
+                  // where the applicant's AppUser doc is missing.
+                  application.studentName.isNotEmpty
+                      ? application.studentName
+                      : 'Applicant ${application.studentUid.substring(0, 6)}',
+                  style: AppTextStyles.cardTitle,
+                ),
+              ),
               StatusPill(status: application.status),
             ],
           ),
+          if (application.studentSkills.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: application.studentSkills
+                  .map((s) => _SkillTag(label: s))
+                  .toList(),
+            ),
+          ],
+          if (application.studentPortfolioLink?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 8),
+            Text(
+              application.studentPortfolioLink!,
+              style: AppTextStyles.caption.copyWith(color: AppColors.primary),
+            ),
+          ],
           if (application.coverNote.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(application.coverNote, style: AppTextStyles.body),
@@ -79,29 +105,49 @@ class _ApplicantTile extends ConsumerWidget {
                 label: 'Shortlist',
                 onTap: () => ref
                     .read(applicationControllerProvider.notifier)
-                    .updateStatus(application.id, ApplicationStatus.shortlisted),
+                    .updateStatus(application, ApplicationStatus.shortlisted),
               ),
               _ActionChip(
                 label: 'Interview',
                 onTap: () => ref
                     .read(applicationControllerProvider.notifier)
-                    .updateStatus(application.id, ApplicationStatus.interview),
+                    .updateStatus(application, ApplicationStatus.interview),
               ),
               _ActionChip(
                 label: 'Accept',
                 onTap: () => ref
                     .read(applicationControllerProvider.notifier)
-                    .updateStatus(application.id, ApplicationStatus.accepted),
+                    .updateStatus(application, ApplicationStatus.accepted),
               ),
               _ActionChip(
                 label: 'Reject',
                 onTap: () => ref
                     .read(applicationControllerProvider.notifier)
-                    .updateStatus(application.id, ApplicationStatus.rejected),
+                    .updateStatus(application, ApplicationStatus.rejected),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SkillTag extends StatelessWidget {
+  const _SkillTag({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.chipBackground,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

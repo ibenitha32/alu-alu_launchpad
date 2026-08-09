@@ -4,6 +4,34 @@ enum OpportunityStatus { open, closed, draft }
 enum Commitment { partTime, fullTime, projectBased }
 enum WorkLocation { remote, onCampus, hybrid }
 
+/// Single source of truth for the opportunity category taxonomy — both the
+/// home screen's filter icons and the post-opportunity form's dropdown read
+/// from this list, so the display label and the value stored on
+/// `Opportunity.category` can never drift apart the way they used to.
+enum OpportunityCategory {
+  design('design', 'Design'),
+  engineering('dev', 'Engineering'),
+  marketing('marketing', 'Marketing'),
+  operations('ops', 'Operations'),
+  research('research', 'Research'),
+  content('content', 'Content');
+
+  const OpportunityCategory(this.storageValue, this.label);
+
+  /// Value persisted on `Opportunity.category` in Firestore.
+  final String storageValue;
+
+  /// Value shown to users in dropdowns and filter chips.
+  final String label;
+
+  static OpportunityCategory? fromStorageValue(String? value) {
+    for (final c in OpportunityCategory.values) {
+      if (c.storageValue == value) return c;
+    }
+    return null;
+  }
+}
+
 OpportunityStatus _statusFromString(String v) => OpportunityStatus.values
     .firstWhere((e) => e.name == v, orElse: () => OpportunityStatus.draft);
 

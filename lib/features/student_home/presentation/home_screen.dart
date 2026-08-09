@@ -5,25 +5,29 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/opportunity_card.dart';
+import '../../../data/models/opportunity.dart';
 import '../../../providers/auth_providers.dart';
+import '../../../providers/bookmark_providers.dart';
 import '../../../providers/opportunity_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  static const _categories = [
-    ('Design', Icons.brush_outlined),
-    ('Engineering', Icons.code),
-    ('Marketing', Icons.campaign_outlined),
-    ('Data', Icons.bar_chart_outlined),
-    ('Other', Icons.grid_view_outlined),
-  ];
+  static const _categoryIcons = {
+    OpportunityCategory.design: Icons.brush_outlined,
+    OpportunityCategory.engineering: Icons.code,
+    OpportunityCategory.marketing: Icons.campaign_outlined,
+    OpportunityCategory.operations: Icons.business_center_outlined,
+    OpportunityCategory.research: Icons.science_outlined,
+    OpportunityCategory.content: Icons.article_outlined,
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentAppUserProvider).value;
     final recommended = ref.watch(recommendedOpportunitiesProvider);
     final filtered = ref.watch(filteredOpportunitiesProvider);
+    final bookmarkedIds = ref.watch(bookmarkedIdsProvider).value ?? const <String>{};
 
     return SafeArea(
       child: ListView(
@@ -99,6 +103,10 @@ class HomeScreen extends ConsumerWidget {
                         child: OpportunityCard(
                           opportunity: list[i],
                           featured: true,
+                          isBookmarked: bookmarkedIds.contains(list[i].id),
+                          onBookmarkToggle: () => ref
+                              .read(bookmarkControllerProvider.notifier)
+                              .toggle(list[i].id),
                           onTap: () =>
                               context.push('/opportunity/${list[i].id}'),
                         ),
@@ -113,14 +121,14 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _categories.map((c) {
-              final selected = ref.watch(categoryFilterProvider) == c.$1;
+            children: _categoryIcons.entries.map((entry) {
+              final selected = ref.watch(categoryFilterProvider) == entry.key;
               return _CategoryIcon(
-                label: c.$1,
-                icon: c.$2,
+                label: entry.key.label,
+                icon: entry.value,
                 selected: selected,
                 onTap: () => ref.read(categoryFilterProvider.notifier).state =
-                    selected ? null : c.$1,
+                    selected ? null : entry.key,
               );
             }).toList(),
           ),
@@ -136,6 +144,10 @@ class HomeScreen extends ConsumerWidget {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: OpportunityCard(
                                 opportunity: o,
+                                isBookmarked: bookmarkedIds.contains(o.id),
+                                onBookmarkToggle: () => ref
+                                    .read(bookmarkControllerProvider.notifier)
+                                    .toggle(o.id),
                                 onTap: () =>
                                     context.push('/opportunity/${o.id}'),
                               ),

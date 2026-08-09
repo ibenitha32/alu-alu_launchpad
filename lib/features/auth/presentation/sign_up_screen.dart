@@ -93,8 +93,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       name: _nameController.text.trim(),
                       role: _selectedRole,
                     );
-                if (_selectedRole == UserRole.startupAdmin && context.mounted) {
+                if (!context.mounted) return;
+                if (_selectedRole == UserRole.startupAdmin) {
                   context.go('/register-startup');
+                } else if (_selectedRole == UserRole.student) {
+                  context.go('/onboarding');
                 }
               },
             ),

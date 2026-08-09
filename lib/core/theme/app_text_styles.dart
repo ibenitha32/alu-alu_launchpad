@@ -8,12 +8,14 @@ class AppTextStyles {
   static const heading = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
     color: AppColors.textPrimary,
   );
 
   static const sectionTitle = TextStyle(
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: FontWeight.w700,
+    letterSpacing: 0.4,
     color: AppColors.textPrimary,
   );
 

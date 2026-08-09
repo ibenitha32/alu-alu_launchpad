@@ -59,8 +59,16 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 28),
           _MenuTile(icon: Icons.person_outline, label: 'My Profile', onTap: () {}),
-          _MenuTile(icon: Icons.star_border, label: 'Skills & Interests', onTap: () {}),
-          _MenuTile(icon: Icons.bookmark_border, label: 'Saved Opportunities', onTap: () {}),
+          _MenuTile(
+            icon: Icons.star_border,
+            label: 'Skills & Interests',
+            onTap: () => context.push('/profile/skills'),
+          ),
+          _MenuTile(
+            icon: Icons.bookmark_border,
+            label: 'Saved Opportunities',
+            onTap: () => context.push('/profile/saved'),
+          ),
           _MenuTile(
             icon: Icons.notifications_none,
             label: 'Notifications',

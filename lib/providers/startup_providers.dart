@@ -37,13 +37,27 @@ class StartupController extends AsyncNotifier<void> {
   }) async {
     final admin = await ref.read(currentAppUserProvider.future);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(startupRepositoryProvider).setVerificationStatus(
+    state = await AsyncValue.guard(() async {
+      final startup =
+          await ref.read(startupRepositoryProvider).watchStartup(startupId).first;
+
+      await ref.read(startupRepositoryProvider).setVerificationStatus(
             startupId: startupId,
             status: status,
             verifiedByUid: admin?.uid ?? '',
-          ),
-    );
+          );
+
+      final label = status == VerificationStatus.verified ? 'verified' : 'rejected';
+      for (final uid in startup?.adminUids ?? const <String>[]) {
+        await ref.read(notificationRepositoryProvider).notify(
+              uid: uid,
+              type: 'verification_result',
+              message: startup == null
+                  ? 'Your startup verification status changed to $label.'
+                  : '${startup.name} was $label.',
+            );
+      }
+    });
   }
 }
 

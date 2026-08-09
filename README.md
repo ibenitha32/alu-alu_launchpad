@@ -58,6 +58,33 @@ test/
   providers/  controller tests using fake repositories via provider overrides
 ```
 
+## Provisioning a platform admin
+
+`UserRole.platformAdmin` is fully supported by the router, `firebase/firestore.rules`,
+and the verification-queue screen (`/admin/verification-queue`) — but there is
+deliberately no in-app sign-up path for it. The security rule for `users/{uid}`
+blocks a signed-in user from changing their own `role` field:
+
+```
+allow update: if isOwner(uid) &&
+  request.resource.data.role == resource.data.role;
+```
+
+That's intentional: role escalation to a platform-trust role must never be a
+client-side write. The only way to create a platform admin is a deliberate,
+out-of-band step by whoever owns the Firebase project:
+
+1. Have the target user sign up normally as a Student (or use an existing account) so a `users/{uid}` document exists.
+2. In the [Firebase Console](https://console.firebase.google.com) → your project → **Firestore Database** → **Data**, open the `users` collection and find the document whose ID matches that user's Auth UID (visible under **Authentication** → **Users**).
+3. Edit the document's `role` field from `student` to `platform_admin` and save.
+
+This edit is made by a project Owner/Editor authenticated via the Console's own
+Google-account IAM permissions, not through the client SDK — so it isn't
+subject to (and doesn't need to satisfy) the client-facing security rule above.
+Once saved, signing that user back into the app routes them straight to the
+verification queue via the router's role-based redirect (`_homeForRole` in
+`lib/core/router/app_router.dart`).
+
 ## Testing
 
 ```
@@ -68,19 +95,19 @@ Two example suites are included to demonstrate the testing strategy for the repo
 - `test/data/opportunity_match_score_test.dart` — pure logic, no mocking needed.
 - `test/providers/application_controller_test.dart` — exercises the Riverpod controller layer against `FakeApplicationRepository`, proving the repository-pattern abstraction is genuinely swappable, not just architectural decoration.
 
-Extend this pattern to `OpportunityController` and `StartupController` using the same fakes for fuller coverage before submission.
+`test/providers/opportunity_controller_test.dart` and `test/providers/startup_controller_test.dart` extend this pattern to those two controllers, and `test/providers/bookmark_controller_test.dart` covers the bookmark toggle flow — all against the same in-memory fakes.
 
 ## Feature checklist (maps to rubric criteria)
 
-- [x] Authentication & onboarding (email/password, role selection at sign-up)
+- [x] Authentication & onboarding (email/password, role selection at sign-up, student skill onboarding at `/onboarding`)
 - [x] Startup profiles with admin-gated verification
-- [x] Opportunity posting (startup admins, once verified)
-- [x] Discovery & search (category filter + text search + skill-match "Recommended" sort)
-- [x] Application submission with optional cover note
-- [x] Real-time updates (Firestore `StreamProvider`s throughout — application status, applicant lists, verification queue)
+- [x] Opportunity posting (startup admins, once verified), using a single shared category taxonomy (`OpportunityCategory`) for both the post form and the discovery filter
+- [x] Discovery & search (category filter + text search + skill-match "Recommended" sort — skills are set during onboarding or from Profile → Skills & Interests)
+- [x] Application submission with optional cover note; applicant name/skills/portfolio link are denormalized onto the application so startup admins can actually evaluate a candidate
+- [x] Real-time updates (Firestore `StreamProvider`s throughout — application status, applicant lists, verification queue, notifications, bookmarks)
 - [x] Firebase backend (Firestore + Auth, Security Rules enforcing the verification gate)
 - [x] State management across screens (Riverpod)
-- [x] Beyond-minimum: skill-match scoring, in-app notifications, application status timeline, startup verification queue
+- [x] Beyond-minimum: skill-match scoring, in-app notifications (status changes + verification results), bookmarking/"Saved Opportunities", application status timeline, startup verification queue
 
 ## Known limitations / suggested future work
 

@@ -4,6 +4,8 @@ import 'package:alu_launchpad/data/models/job_application.dart';
 import 'package:alu_launchpad/data/models/opportunity.dart';
 import 'package:alu_launchpad/data/models/startup.dart';
 import 'package:alu_launchpad/data/repositories/application_repository.dart';
+import 'package:alu_launchpad/data/repositories/bookmark_repository.dart';
+import 'package:alu_launchpad/data/repositories/notification_repository.dart';
 import 'package:alu_launchpad/data/repositories/opportunity_repository.dart';
 import 'package:alu_launchpad/data/repositories/startup_repository.dart';
 
@@ -140,6 +142,9 @@ class FakeApplicationRepository implements ApplicationRepository {
     required String studentUid,
     required String startupId,
     required String coverNote,
+    required String studentName,
+    List<String> studentSkills = const [],
+    String? studentPortfolioLink,
   }) async {
     final now = DateTime.now();
     final application = JobApplication(
@@ -151,6 +156,9 @@ class FakeApplicationRepository implements ApplicationRepository {
       appliedAt: now,
       statusUpdatedAt: now,
       statusHistory: [StatusEvent(status: ApplicationStatus.applied, timestamp: now)],
+      studentName: studentName,
+      studentSkills: studentSkills,
+      studentPortfolioLink: studentPortfolioLink,
     );
     submittedApplications.add(application);
     _store[application.id] = application;
@@ -172,6 +180,9 @@ class FakeApplicationRepository implements ApplicationRepository {
       appliedAt: existing.appliedAt,
       statusUpdatedAt: DateTime.now(),
       statusHistory: existing.statusHistory,
+      studentName: existing.studentName,
+      studentSkills: existing.studentSkills,
+      studentPortfolioLink: existing.studentPortfolioLink,
     );
     _allStream.update(_store.values.toList());
   }
@@ -244,5 +255,62 @@ class FakeStartupRepository implements StartupRepository {
       createdAt: existing.createdAt,
     );
     _allStream.update(_store.values.toList());
+  }
+}
+
+/// Record of a single notify() call — used by tests to assert who was
+/// notified, with what type, and what the message said.
+class SentNotification {
+  SentNotification({required this.uid, required this.type, required this.message});
+  final String uid;
+  final String type;
+  final String message;
+}
+
+/// In-memory stand-in for FirestoreNotificationRepository.
+class FakeNotificationRepository implements NotificationRepository {
+  final List<SentNotification> sent = [];
+  final Set<String> readIds = {};
+
+  @override
+  Future<void> notify({
+    required String uid,
+    required String type,
+    required String message,
+  }) async {
+    sent.add(SentNotification(uid: uid, type: type, message: message));
+  }
+
+  @override
+  Future<void> markRead({required String uid, required String notificationId}) async {
+    readIds.add(notificationId);
+  }
+}
+
+/// In-memory stand-in for FirestoreBookmarkRepository.
+class FakeBookmarkRepository implements BookmarkRepository {
+  final Map<String, Set<String>> _store = {};
+  final Map<String, _ValueStream<Set<String>>> _streams = {};
+
+  _ValueStream<Set<String>> _streamFor(String uid) => _streams.putIfAbsent(
+      uid, () => _ValueStream({...(_store[uid] ?? const <String>{})}));
+
+  @override
+  Stream<Set<String>> watchBookmarkedIds(String uid) => _streamFor(uid).stream;
+
+  @override
+  Future<void> toggleBookmark({
+    required String uid,
+    required String opportunityId,
+    required bool isBookmarked,
+  }) async {
+    final updated = {...(_store[uid] ?? const <String>{})};
+    if (isBookmarked) {
+      updated.remove(opportunityId);
+    } else {
+      updated.add(opportunityId);
+    }
+    _store[uid] = updated;
+    _streamFor(uid).update(updated);
   }
 }
