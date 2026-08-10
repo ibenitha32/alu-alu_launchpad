@@ -1,6 +1,1 @@
-{
-  "firestore": {
-    "rules": "firebase/firestore.rules",
-    "indexes": "firebase/firestore.indexes.json"
-  }
-}
+{"firestore":{"rules":"firebase/firestore.rules","indexes":"firebase/firestore.indexes.json"},"flutter":{"platforms":{"android":{"default":{"projectId":"alu-launchpad-2026","appId":"1:168934246274:android:fd692ce46f2c5f046df19b","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"alu-launchpad-2026","configurations":{"android":"1:168934246274:android:fd692ce46f2c5f046df19b"}}}}}}

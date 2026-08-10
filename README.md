@@ -5,11 +5,7 @@ Internship & opportunity matching platform connecting ALU students with verified
 
 ## Getting started
 
-1. **Create the Flutter project shell**:
-   ```
-   flutter create --org com.alu alu_launchpad
-   ```
-   Then copy this repo's `lib/`, `pubspec.yaml`, `test/`, `firebase/`, and `firebase.json` into it, overwriting the generated `lib/main.dart` and `pubspec.yaml`.
+1. **Clone the repo**. The Android platform folder (`android/`) is checked in, generated via `flutter create --platforms=android --org com.alu .`, so there's no need to scaffold a project shell yourself — just clone and go. (An `ios/` folder isn't included; run `flutter create --platforms=ios .` first if you need to build for iOS.)
 
 2. **Install dependencies**:
    ```
