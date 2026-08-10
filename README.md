@@ -33,6 +33,27 @@ Internship & opportunity matching platform connecting ALU students with verified
    flutter run
    ```
 
+## Seeding demo data
+
+The Firestore schema is defined entirely by `lib/data/models/` and `lib/data/repositories/`,
+so `scripts/seed_firestore.js` generates a large, internally-consistent, fictional dataset
+directly from that schema — 200 users, 50 startups, 300 opportunities, 300 applications,
+500 notifications, and 500 bookmarks — plus matching Firebase Auth accounts.
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccountKey.json npm install
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccountKey.json npm run seed:firestore
+```
+
+Get the service account key from Firebase Console → Project Settings → Service Accounts →
+"Generate new private key"; save it **outside** this repo (it's gitignored as an extra
+safety net, but don't rely on that). All generated IDs live under a `demo-` prefix and the
+script upserts deterministically, so it's safe to re-run — it never touches, overwrites, or
+deletes anything outside that namespace, and it never modifies `firebase/firestore.rules`.
+Run with `DRY_RUN=1` to generate and validate the dataset in memory without touching Firebase
+at all — useful for sanity-checking the generator itself. See the header comment in
+`scripts/seed_firestore.js` for full details (demo password override, batching, etc).
+
 ## Architecture at a glance
 
 - **State management**: Riverpod, with `StreamProvider`s wrapping Firestore snapshots for real-time UI updates, and `AsyncNotifier`s for write actions (apply, post opportunity, verify startup) so loading/error states are handled uniformly.

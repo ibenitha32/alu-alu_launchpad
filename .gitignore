@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node.js tooling (scripts/seed_firestore.js and friends)
+/node_modules/
+
+# Firebase Admin SDK credentials — NEVER commit these. Point
+# GOOGLE_APPLICATION_CREDENTIALS at a file stored outside this repo instead.
+*serviceAccountKey*.json
+*-firebase-adminsdk-*.json
+firebase-service-account*.json
+.env
+.env.*
+!.env.example

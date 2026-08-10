@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../data/models/startup.dart';
+import '../../../providers/auth_providers.dart';
 import '../../../providers/startup_providers.dart';
 
 class AdminVerificationQueueScreen extends ConsumerWidget {
@@ -19,6 +20,17 @@ class AdminVerificationQueueScreen extends ConsumerWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         title: const Text('Verification Queue'),
+        actions: [
+          // Platform admins land here directly (outside the bottom-nav
+          // shell that hosts Profile -> Logout for the other roles), so
+          // this is their only way to sign out.
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
+          ),
+        ],
       ),
       body: pendingAsync.when(
         data: (startups) {
